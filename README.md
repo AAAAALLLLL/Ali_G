@@ -35,5 +35,5 @@ psvmr<-predict(svmradial,testing)
 pnn<-predict(nnet,testing)
 ptree<-predict(tree,testing)
 
-psvmr
 
+psvmr

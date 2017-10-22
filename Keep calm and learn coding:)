@@ -1,16 +1,16 @@
 install.packages("caret")
-library(caret)
-training<-read.csv("E:\\pml-training.csv")
-testing<-read.csv("E:\\pml-testing.csv")
-View(training)
+library(caret)      
+training<-read.csv("E:\\pml-training.csv")   loading training data set
+testing<-read.csv("E:\\pml-testing.csv")     loading testing data set
+View(training)      
 set.seed(1846)
 ncol(training)
-nearzero <- nearZeroVar(training, saveMetrics = TRUE)
-training <- training[,!nearzero$nzv]
+nearzero <- nearZeroVar(training, saveMetrics = TRUE)        detecting N/A variables
+training <- training[,!nearzero$nzv]                         remove N/A variables from training
 ncol(training)
-rvar<-sapply(colnames(training),function(x)if(sum(is.na(training[,x]))>0.5*nrow(training)){return(TRUE)}else{return(FALSE)})
-training<-training[,!rvar]
-View(training)
+rvar<-sapply(colnames(training),function(x)if(sum(is.na(training[,x]))>0.5*nrow(training)){return(TRUE)}else{return(FALSE)})   also the variables with ore than half of N/A detects
+trtraining<-training[,!rvar]                the varaibles with more than 50% N/A values omits from training data set
+ViView(training)                             
 training<-training[,-c(1:6)]
 ncol(training)
 c<-findCorrelation(cor(training[,-53]),cutoff = 0.85)
@@ -25,16 +25,16 @@ confusionMatrix(svmlinear)
 install.packages("nnet")
 library(nnet)
 nn<-train(classe~.,data = training,method="nnet",trControl=tc)
-confustionMatrix(nn)
-tree<-train(classe~.,data = training,method="rpart",trControl=tc)
-confusionMatrix(tree)
+coconfustionMatrix(nn)
+trtree<-train(classe~.,data = training,method="rpart",trControl=tc)
+coconfusionMatrix(tree)
 
-psvml<-predict(svmlinear,testing)
-psvmr<-predict(svmradial,testing)
-pnn<-predict(nnet,testing)
-ptree<-predict(tree,testing)
+pspvml<-predict(svmlinear,testing)
+pspvmr<-predict(svmradial,testing)
+pnnn<-predict(nnet,testing)
+pttree<-predict(tree,testing)
 
-psvmr
+pspvmr
 
 
 

@@ -1,0 +1,104 @@
+---
+title: "My R Markdown for Practical Machine Learning Project"
+author: "Ali Ghanbari"
+date: "March 15, 2018"
+output: html_document
+---
+Let's load the training and testing data sets in r
+```{r}
+library(caret)
+training<-read.csv("D:\\pml-training.csv")
+testing<-read.csv("D:\\pml-testing.csv")
+View(training)
+ncol(training)
+```
+setting seeds for not randomizing in results
+```{r}
+set.seed(1864)
+```
+detecting N/A variables
+```{r}
+nearzero<-nearZeroVar(training,saveMetrics = TRUE)
+```
+Omitting N/A variables from training set
+```{r}
+training<-training[,!nearzero$nzv]
+ncol(training)
+```
+applying a function for detecting variables with more than 50 % N/A varaibles
+```{r}
+rvar<-sapply(colnames(training), function(x)if(sum(is.na(training[,x]))>0.5*nrow(training)){return(TRUE)}else{return(FALSE)})
+```
+removing variables with more than N/A values from training set
+```{r}
+training<-training[,!rvar]
+View(training)
+```
+first 6 columns of training set is not useful for prediction so they can be deleted 
+```{r}
+training<-training[,-c(1:6)]
+ncol(training)
+```
+for preprocesss maybe pca can be useful so considering the corr between variables is necessary to be checked
+```{r}
+c<-findCorrelation(cor(training[,-53]),cutoff = 0.85)   
+```
+showing the name of the variables with more than 85 % corr
+```{r}
+names(training[c])
+```
+```{r}
+c<-findCorrelation(cor(training[,-53]),cutoff = 0.75)  
+```
+showing the name of variables with more than 75% corr
+```{r}
+names(training[c])  
+```
+because most of the variables have good corr with each other pca can be uselful as preprocess. Also repeated cross validation for training set with 5 times repetition applied for reducing overfitting and variance
+```{r}
+tc<-trainControl(method = "repeatedcv",number = 5,preProcOptions = "pca") 
+```
+the first algorithm to use which is considered is radial svm
+```{r}
+svmradial<-train(classe~.,data=training,method="svmRadial",trControl=tc)
+confusionMatrix(svmradial)
+```
+then linear svm 
+```{r}
+svmlinear<-train(classe~.,data=training,method="svmLinear",trControl=tc) 
+confusionMatrix(svmlinear)
+```
+installing the package of neural network
+```{r}
+library(nnet)  
+```
+modeling neural net for training data set
+```{r}
+nn<-train(classe~.,data = training,method="nnet",trControl=tc)
+confusionMatrix(nn)
+```
+then classification tree applied
+```{r}
+tree<-train(classe~.,data = training,method="rpart",trControl=tc) 
+confusionMatrix(tree)
+```
+prediction for radial svm
+```{r}
+psvmr<-predict(svmradial,testing)
+```
+prediction for linear svm
+```{r}
+psvml<-predict(svmlinear,testing)    
+```
+prediction for neural net
+```{r}
+pnn<-predict(nn,testing)
+```
+prediction for classification tree
+```{r}
+ptree<-predict(tree,testing) 
+```
+the accuracy of svm radial was 93.4%, then svm linear was 78.35, following by classification tree 50.01% and neural net with 43.98%. So, the highest accuracy with radial svm selected as the best model for prediction.
+```{r}
+psvmr
+```

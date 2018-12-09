@@ -1,0 +1,101 @@
+---
+title: "Final Project - Kaggle Competition"
+author: "Ali Ghanbari"
+date: "December 8, 2018"
+output: html_document
+---
+
+```{r}
+
+
+library(caret)
+
+train<-read.csv("C:\\Users\\Ali\\Documents\\Texas State\\Adv Stst Mths\\Final Project\\Data\\all\\train.csv")
+
+test<-read.csv("C:\\Users\\Ali\\Documents\\Texas State\\Adv Stst Mths\\Final Project\\Data\\all\\test.csv")
+
+train<-train[,-1]
+View(train)
+
+test<-test[,-1]
+View(test)
+
+set.seed(1553)
+
+nearzero<-nearZeroVar(train,saveMetrics = T)
+train<-train[,!nearzero$nzv]
+View(train)
+
+nearzero<-nearZeroVar(test,saveMetrics = T)
+test<-test[,!nearzero$nzv]
+View(test)
+
+
+sum(is.na(train))
+
+colSums(is.na(train))
+
+nrow(train)
+
+train.clean<-na.omit(train)
+nrow(train.clean)
+
+train.clean2<-train[complete.cases(train),]
+nrow(train.clean2)
+
+train.clean3<-train[,colSums(is.na(train))<10]
+train.clean4<-na.omit(train.clean3)
+nrow(train.clean4)
+sum(is.na(train.clean4))
+
+
+nrow(test)
+test.clean<-na.omit(test)
+nrow(test.clean)
+test.clean2<-test[complete.cases(test),]
+nrow(test.clean2)
+test.clean3<-test[,colSums(is.na(test))<10]
+test.clean4<-na.omit(test.clean3)
+nrow(test.clean4)
+sum(is.na(test.clean4))
+
+plot(train.clean4$SalePrice)
+
+
+library(car)
+
+
+library(lmtest)
+
+mlr<-lm(SalePrice~.,data = train.clean4)
+resid(mlr)
+
+mean(resid(mlr))
+dwtest(mlr)
+bptest(mlr)
+qqPlot(resid(mlr))
+shapiro.test(resid(mlr))
+
+summary(mlr)
+
+
+set.seed(8453)
+
+tc<-trainControl(method = "repeatedcv",number = 10,repeats = 5,preProcOptions = "pca")
+
+names(train.clean4)
+
+names(test.clean4)
+
+train.clean4<-train.clean4[,-c(17,18)]
+
+test.clean4<-test.clean4[,-c(5,22)]
+
+RF<-train(SalePrice~.,data=train.clean4,method="rf",trControl=tc)
+
+p<-predict(RF,newdata = test.clean4)
+
+results<-write.csv(p,file = "results.csv")
+
+```
+

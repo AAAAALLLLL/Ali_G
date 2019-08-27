@@ -1,2 +1,2 @@
-# Black-Jaguar
-https://aaaaalllll.github.io/Black-Jaguar/
+# MyGitHub
+https://aaaaalllll.github.io/MyGitHub/
